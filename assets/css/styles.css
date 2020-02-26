@@ -1,0 +1,38 @@
+@import url('https://fonts.googleapis.com/css?family=Fira+Sans:300,400,500&display=swap&subset=cyrillic');
+
+button {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+#geootzyv-container {
+    font-family: 'Fira Sans', Arial, Helvetica, sans-serif;
+    height: 100vh;
+}
+
+#map-container {
+    height: 100%;
+}
+
+.feedback__address {
+    background-color: rgb(255, 134, 99);
+    color: rgb(79, 79, 79);
+}
+.feedback__header {
+    text-transform: uppercase;
+    color: rgb(255, 134, 99);
+}
+
+.feedback__input {
+    width: 160px;
+    margin-bottom: 20px;
+}
+
+.feedback__control {
+    text-align: right;
+}
+.feedback__submit {
+    background-color: rgb(255, 134, 99);
+    color: white;
+}

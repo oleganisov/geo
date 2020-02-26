@@ -1,0 +1,16 @@
+<div class="feedback">
+    <div class="feedback__address"> {{feedbackAddress}} </div>
+    <div class="feedback__list">
+        {{#each feedbackList}}
+        <div> {{name}}: {{comment}} </div>
+        {{else}}
+        <div> Отзывов пока нет... </div>
+        {{/each}}
+    </div>
+    <div class="feedback__header"> Ваш отзыв </div>
+    <div><input class="feedback__input" type="text" placeholder="Ваше имя"></input></div>
+    <div><input class="feedback__input" type="text" placeholder="Укажите место"></input></div>
+    <div><textarea class="feedback__comment" rows="2" placeholder="Поделитесь впечатлениями"></textarea>
+    </div>
+    <div class="feedback__control"><button class="feedback__submit">Добавить</button></div>
+</div>
