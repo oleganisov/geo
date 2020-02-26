@@ -7,9 +7,9 @@
     </div>
     <div class="feedback__list">
         {{#each balloonList}}
-        <div> {{name}}: {{comment}} </div>
+        <div class="feedback__item"> {{name}}: {{comment}} </div>
         {{else}}
-        <div> Отзывов пока нет... </div>
+        <div class="feedback__empty"> Отзывов пока нет... </div>
         {{/each}}
     </div>
     <h3 class="feedback__title"> Ваш отзыв </h3>
