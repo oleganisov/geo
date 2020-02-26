@@ -1,11 +1,16 @@
 import renderBalloon from '../templates/balloon.hbs';
 /* global ymaps  */
 
-let placemarks = [];
-let coordinates = [];
+let userData = {
+    feedback: [
+        { name: 'User1', comment: 'Test' },
+        { name: 'User2', comment: 'Test2' }
+    ]
+};
 
 function mapInit() {
     ymaps.ready(async () => {
+        let placemarks = [];
         const map = await new ymaps.Map('map-container', {
             center: [55.1, 36.6],
             zoom: 12,
@@ -18,21 +23,17 @@ function mapInit() {
         });
 
         // Создание метки.
-        async function createPlacemark(
-            coords,
-            address = '',
-            hintContent = 'поиск...'
-        ) {
+        async function createPlacemark(coords, address = '', hintContent = '') {
             const newPlacemark = await new ymaps.Placemark(
                 coords,
-                { address: address, hintContent: hintContent },
+                { address, hintContent },
                 {
                     iconLayout: 'default#image',
                     iconImageHref: '../assets/img/baloon_active.png',
                     iconImageSize: [44, 66],
                     iconImageOffset: [-22, -33],
                     balloonContentLayout: balloonContentLayout,
-                    closeButton: false
+                    balloonCloseButton: false
                 }
             );
 
@@ -49,19 +50,63 @@ function mapInit() {
         // создание макета балуна
         const balloonContentLayout = ymaps.templateLayoutFactory.createClass(
             renderBalloon({
-                balloonAddress: '{{ properties.address }}',
-                balloonList: [
-                    { name: 'User1', comment: 'Test' },
-                    { name: 'User2', comment: 'Test2' }
-                ]
-            })
+                balloonAddress: '$[properties.address]', //'{{ properties.address }}',
+                // balloonList: userData.feedback
+                balloonList: '$[properties.feedback]'
+            }),
+            {
+                build() {
+                    this.constructor.superclass.build.call(this);
+                    const btnClose = document.querySelector('.feedback__close');
+                    const btnSubmit = document.querySelector(
+                        '.feedback__submit'
+                    );
+
+                    btnClose.addEventListener('click', this.handlerClose);
+                    btnSubmit.addEventListener(
+                        'click',
+                        this.handlerSubmit.bind(this)
+                    );
+                },
+                handlerClose() {
+                    map.balloon.close();
+                },
+                handlerSubmit(e) {
+                    e.preventDefault();
+                    const feedback = {};
+                    const arrFeedback = [];
+                    const feedbackProp = {};
+                    const form = document.querySelector('.feedback__form');
+
+                    if (
+                        form.name.value &&
+                        form.place.value &&
+                        form.comment.value
+                    ) {
+                        feedback.name = form.name.value;
+                        feedback.place = form.place.value;
+                        feedback.comment = form.comment.value;
+                        feedback.date = new Date().toLocaleDateString('ru-RU');
+                        arrFeedback.push(feedback);
+                        feedbackProp.feedback = arrFeedback;
+                        this.getData('geoObject').properties.set(feedbackProp);
+                    } else {
+                        // alert('Не заполнены поля');
+                    }
+                    if (this.getData('geoObject').properties) {
+                        console.log(
+                            this.getData('geoObject').properties.get('feedback')
+                        );
+                    }
+                }
+            }
         );
 
         map.events.add('click', async e => {
-            coordinates = await e.get('coords');
-            const address = await getAddress(coordinates);
+            const coords = await e.get('coords');
+            const address = await getAddress(coords);
             const newPlacemark = await createPlacemark(
-                coordinates,
+                coords,
                 address,
                 address
             );
@@ -73,7 +118,7 @@ function mapInit() {
 
             if (!newPlacemark.balloon.isOpen()) {
                 newPlacemark.balloon.open(
-                    coordinates,
+                    coords,
                     {},
                     {
                         balloonContentLayout: balloonContentLayout,
@@ -81,7 +126,6 @@ function mapInit() {
                     }
                 );
             }
-            console.log(newPlacemark.properties);
         });
     });
 }
