@@ -18,10 +18,14 @@ function mapInit() {
         });
 
         // Создание метки.
-        async function createPlacemark(coords, hintContent = 'поиск...') {
+        async function createPlacemark(
+            coords,
+            address = '',
+            hintContent = 'поиск...'
+        ) {
             const newPlacemark = await new ymaps.Placemark(
                 coords,
-                { hintContent: hintContent },
+                { address: address, hintContent: hintContent },
                 {
                     iconLayout: 'default#image',
                     iconImageHref: '../assets/img/baloon_active.png',
@@ -44,7 +48,7 @@ function mapInit() {
         // создание макета балуна
         const balloonContentLayout = ymaps.templateLayoutFactory.createClass(
             renderBalloon({
-                feedbackAddress: 'Караганда',
+                feedbackAddress: '{{ properties.address }}',
                 feedbackList: [
                     { name: 'User1', comment: 'Test' },
                     { name: 'User2', comment: 'Test2' }
@@ -55,7 +59,11 @@ function mapInit() {
         map.events.add('click', async e => {
             coordinates = await e.get('coords');
             const address = await getAddress(coordinates);
-            const newPlacemark = await createPlacemark(coordinates, address);
+            const newPlacemark = await createPlacemark(
+                coordinates,
+                address,
+                address
+            );
 
             clusterer.add(newPlacemark);
             placemarks.push(newPlacemark);
@@ -69,6 +77,7 @@ function mapInit() {
                     { balloonContentLayout: balloonContentLayout }
                 );
             }
+            console.log(newPlacemark.properties);
         });
     });
 }
