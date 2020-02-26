@@ -17,7 +17,7 @@ button {
 
 .feedback__address {
     background-color: rgb(255, 134, 99);
-    color: rgb(79, 79, 79);
+    color: white;
 }
 .feedback__header {
     text-transform: uppercase;
