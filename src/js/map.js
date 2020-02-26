@@ -1,6 +1,9 @@
 import renderBalloon from '../templates/balloon.hbs';
 /* global ymaps  */
 
+let placemarks = [];
+let coordinates = [];
+
 function mapInit() {
     ymaps.ready(async () => {
         const map = await new ymaps.Map('map-container', {
@@ -13,13 +16,32 @@ function mapInit() {
         const clusterer = await new ymaps.Clusterer({
             clusterDisableClickZoom: true
         });
+
+        // Создание метки.
+        async function createPlacemark(coords, hintContent = 'поиск...') {
+            const newPlacemark = await new ymaps.Placemark(
+                coords,
+                { hintContent: hintContent },
+                {
+                    iconLayout: 'default#image',
+                    iconImageHref: '../assets/img/baloon_active.png',
+                    iconImageSize: [44, 66],
+                    iconImageOffset: [-22, -33],
+                    balloonContentLayout: balloonContentLayout
+                }
+            );
+
+            return newPlacemark;
+        }
+        // Получение адреса.
+        async function getAddress(coords) {
+            const geocode = await ymaps.geocode(coords);
+            const firstObject = await geocode.geoObjects.get(0);
+            const address = await firstObject.getAddressLine();
+
+            return address;
+        }
         // создание макета балуна
-        // const balloonLayoutClass = ymaps.templateLayoutFactory.createClass(
-        //     '<h3>$[properties.name]</h3>' +
-        //         '<p>Описание: $[properties.description]</p>' +
-        //         '<p>Население: $[properties.population|неизвестно]</p>' +
-        //         '<p>Метрополитен: </p>'
-        // );
         const balloonContentLayout = ymaps.templateLayoutFactory.createClass(
             renderBalloon({
                 feedbackAddress: 'Караганда',
@@ -30,61 +52,23 @@ function mapInit() {
             })
         );
 
-        // Создание метки.
-        const createPlacemark = async (
-            coords
-            // hintContent = 'поиск...',
-            // balloonContent = 'Content',
-            // balloonContentHeader = 'Header'
-        ) => {
-            const newPlacemark = await new ymaps.Placemark(
-                coords,
-                {
-                    // hintContent: hintContent,
-                    // balloonContent: balloonContent,
-                    // balloonContentHeader: balloonContentHeader,
-                    // balloonContentLayout: balloonContentLayout
-                },
-                {
-                    iconLayout: 'default#image',
-                    iconImageHref: '../assets/img/baloon_active.png',
-                    iconImageSize: [44, 66],
-                    iconImageOffset: [-22, -33],
-                    balloonContentLayout: balloonContentLayout
-                }
-            );
+        map.events.add('click', async e => {
+            coordinates = await e.get('coords');
+            const address = await getAddress(coordinates);
+            const newPlacemark = await createPlacemark(coordinates, address);
 
             clusterer.add(newPlacemark);
+            placemarks.push(newPlacemark);
 
-            return newPlacemark;
-        };
-        // Получение адреса.
-        const getAddress = async coords => {
-            const geocode = await ymaps.geocode(coords);
-            const firstObject = await geocode.geoObjects.get(0);
-            const address = await firstObject.getAddressLine();
+            map.geoObjects.add(clusterer);
 
-            return address;
-        };
-
-        map.events.add('click', async e => {
-            const coords = await e.get('coords');
-            const address = await getAddress(coords);
-            // const balloonContent = `<div><div class="balloon__header">${address}</div><input type="text" placeholder="Ваше имя"></input></div>`;
-
-            if (!map.balloon.isOpen()) {
-                map.balloon.open(
-                    coords,
-                    {
-                        balloonHeader: 'Headr',
-                        balloonContent: 'Hello Yandex!'
-                    },
+            if (!newPlacemark.balloon.isOpen()) {
+                newPlacemark.balloon.open(
+                    coordinates,
+                    {},
                     { balloonContentLayout: balloonContentLayout }
                 );
             }
-
-            createPlacemark(coords, address, '', address);
-            map.geoObjects.add(clusterer);
         });
     });
 }
