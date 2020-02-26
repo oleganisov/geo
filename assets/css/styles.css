@@ -15,24 +15,41 @@ button {
     height: 100%;
 }
 
-.feedback__address {
+.feedback__header {
+    display: flex;
+    justify-content: space-between;
     background-color: rgb(255, 134, 99);
     color: white;
+    padding: 10px 0 10px 2px;
+    margin-bottom: 10px;
 }
-.feedback__header {
+.feedback__address {
+    margin-right: 5px;
+}
+.feedback__title {
     text-transform: uppercase;
     color: rgb(255, 134, 99);
 }
-
-.feedback__input {
-    width: 160px;
-    margin-bottom: 20px;
+.feedback__form {
+    display: flex;
+    flex-direction: column;
 }
-
+.feedback__input {
+    width: 355px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    outline: none;
+    padding: 2px 5px;
+}
+.input-text {
+    resize: none;
+}
 .feedback__control {
     text-align: right;
 }
 .feedback__submit {
     background-color: rgb(255, 134, 99);
     color: white;
+    border-radius: 10px;
+    padding: 10px 20px;
 }

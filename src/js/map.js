@@ -31,7 +31,8 @@ function mapInit() {
                     iconImageHref: '../assets/img/baloon_active.png',
                     iconImageSize: [44, 66],
                     iconImageOffset: [-22, -33],
-                    balloonContentLayout: balloonContentLayout
+                    balloonContentLayout: balloonContentLayout,
+                    closeButton: false
                 }
             );
 
@@ -48,8 +49,8 @@ function mapInit() {
         // создание макета балуна
         const balloonContentLayout = ymaps.templateLayoutFactory.createClass(
             renderBalloon({
-                feedbackAddress: '{{ properties.address }}',
-                feedbackList: [
+                balloonAddress: '{{ properties.address }}',
+                balloonList: [
                     { name: 'User1', comment: 'Test' },
                     { name: 'User2', comment: 'Test2' }
                 ]
@@ -74,7 +75,10 @@ function mapInit() {
                 newPlacemark.balloon.open(
                     coordinates,
                     {},
-                    { balloonContentLayout: balloonContentLayout }
+                    {
+                        balloonContentLayout: balloonContentLayout,
+                        closeButton: false
+                    }
                 );
             }
             console.log(newPlacemark.properties);
