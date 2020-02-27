@@ -9,58 +9,12 @@ function mapInit() {
             controls: ['zoomControl'],
             behaviors: ['drag']
         });
-        // Создание кластера.
-        const clusterer = await new ymaps.Clusterer({
-            clusterDisableClickZoom: true,
-            clusterOpenBalloonOnClick: true,
-            clusterBalloonContentLayout: 'cluster#balloonCarousel',
-            clusterBalloonItemContentLayout: clusterBalloonItemContentLayout,
-            clusterBalloonCycling: false,
-            clusterBalloonPagerType: 'marker',
-            hideIconOnBalloonOpen: false,
-            clusterIcons: [
-                {
-                    href: '../assets/img/baloon_notactive.png',
-                    size: [44, 66],
-                    offset: [-22, -33]
-                }
-            ],
-            clusterNumbers: [100]
-        });
-
-        // Создание метки.
-        async function createPlacemark(coords, address = '', hintContent = '') {
-            const newPlacemark = await new ymaps.Placemark(
-                coords,
-                {
-                    address,
-                    hintContent,
-                    balloonContentHeader: address + 'header',
-                    balloonContentBody: address + 'body',
-                    balloonContentFooter: address + 'footer',
-                    custom: 'test'
-                },
-                {
-                    iconLayout: 'default#image',
-                    iconImageHref: '../assets/img/baloon_active.png',
-                    iconImageSize: [44, 66],
-                    iconImageOffset: [-22, -33],
-                    balloonContentLayout: balloonContentLayout,
-                    balloonCloseButton: false,
-                    hideIconOnBalloonOpen: false
-                }
-            );
-
-            return newPlacemark;
-        }
-        // Получение адреса.
-        async function getAddress(coords) {
-            const geocode = await ymaps.geocode(coords);
-            const firstObject = await geocode.geoObjects.get(0);
-            const address = await firstObject.getAddressLine();
-
-            return address;
-        }
+        // создание макета балуна кластера
+        const clusterBalloonItemContentLayout = ymaps.templateLayoutFactory.createClass(
+            '<h2 class=ballon_header>{{ properties.balloonContentHeader|raw }}</h2>' +
+                '<div class=ballon_body>{{ properties.balloonContentBody|raw }}</div>' +
+                '<div class=ballon_footer>{{ properties.custom|raw }}</div>'
+        );
         // создание макета балуна метки
         const balloonContentLayout = ymaps.templateLayoutFactory.createClass(
             renderBalloon({
@@ -125,22 +79,58 @@ function mapInit() {
                 }
             }
         );
-        // создание макета балуна кластера
-        const clusterBalloonItemContentLayout = ymaps.templateLayoutFactory.createClass(
-            // '<div >{{ properties.geoObjects[0].properties.address }}</div>'
-            // '<div>{{ properties.balloonContentBody|raw }}</div>'
-            // '{% for geo in properties.geoObjects %}' +
-            //     '<div >geo.properties.feedback.length<div>' +
-            //     '{% endfor %}'
-            [
-                '<div>{{properties.balloonContentHeader|raw }}</div>',
-                '<div>',
-                '{% for geoObject in properties.geoObjects %}',
-                '<div>{{ geoObject.properties.custom }} </div>',
-                '{% endfor %}',
-                '</div>'
-            ].join('')
-        );
+        // Создание кластера.
+        const clusterer = await new ymaps.Clusterer({
+            clusterDisableClickZoom: true,
+            clusterOpenBalloonOnClick: true,
+            clusterBalloonContentLayout: 'cluster#balloonCarousel',
+            clusterBalloonItemContentLayout: clusterBalloonItemContentLayout,
+            clusterBalloonCycling: false,
+            clusterBalloonPagerType: 'marker',
+            hideIconOnBalloonOpen: false,
+            clusterIcons: [
+                {
+                    href: '../assets/img/baloon_notactive.png',
+                    size: [44, 66],
+                    offset: [-22, -33]
+                }
+            ],
+            clusterNumbers: [100]
+        });
+
+        // Создание метки.
+        async function createPlacemark(coords, address = '', hintContent = '') {
+            const newPlacemark = await new ymaps.Placemark(
+                coords,
+                {
+                    address,
+                    hintContent,
+                    balloonContentHeader: address + 'header',
+                    balloonContentBody: address + 'body',
+                    balloonContentFooter: address + 'footer',
+                    custom: 'test'
+                },
+                {
+                    iconLayout: 'default#image',
+                    iconImageHref: '../assets/img/baloon_active.png',
+                    iconImageSize: [44, 66],
+                    iconImageOffset: [-22, -33],
+                    balloonContentLayout: balloonContentLayout,
+                    balloonCloseButton: false,
+                    hideIconOnBalloonOpen: false
+                }
+            );
+
+            return newPlacemark;
+        }
+        // Получение адреса.
+        async function getAddress(coords) {
+            const geocode = await ymaps.geocode(coords);
+            const firstObject = await geocode.geoObjects.get(0);
+            const address = await firstObject.getAddressLine();
+
+            return address;
+        }
 
         // обработчик кликов на карте
         map.events.add('click', async e => {
@@ -157,14 +147,7 @@ function mapInit() {
             map.geoObjects.add(clusterer);
             // открытие балуна новой метки
             if (!newPlacemark.balloon.isOpen()) {
-                newPlacemark.balloon.open(
-                    coords,
-                    {},
-                    {
-                        balloonContentLayout: balloonContentLayout,
-                        closeButton: false
-                    }
-                );
+                newPlacemark.balloon.open(coords);
             }
         });
         // map.events.add('balloonopen', e =>
