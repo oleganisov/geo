@@ -48,7 +48,11 @@ function mapInit() {
                 balloonList:
                     '{% if properties.feedback.length %}' +
                     '{% for feed in properties.feedback %}' +
-                    '<div class="feedback__item">{{feed.name}}</div>' +
+                    '<div class="feedback__item"><div>' +
+                    '<span class="feedback__author">{{feed.name}} </span>' +
+                    '<span class="feedback__place">{{feed.place}} </span>' +
+                    '<span class="feedback__date">{{feed.date}}</span></div>' +
+                    '<div class="feedback__comment">{{feed.comment}}</div></div>' +
                     '{% endfor %}' +
                     '{% else %}' +
                     '<div class="feedback__empty"> Отзывов пока нет... </div>' +

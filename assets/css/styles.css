@@ -1,5 +1,14 @@
 @import url('https://fonts.googleapis.com/css?family=Fira+Sans:300,400,500&display=swap&subset=cyrillic');
 
+body {
+    font-family: 'Fira Sans', Arial, Helvetica, sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    position: relative;
+    height: 100%;
+}
 button {
     border: none;
     background: transparent;
@@ -8,18 +17,22 @@ button {
 }
 
 #geootzyv-container {
-    font-family: 'Fira Sans', Arial, Helvetica, sans-serif;
     height: 100vh;
 }
 
 #map-container {
     height: 100%;
 }
-
+.feedback {
+    font-family: 'Fira Sans';
+    width: 100%;
+}
 .feedback__header {
     display: flex;
     justify-content: space-between;
     background-color: rgb(255, 134, 99);
+    font-weight: 300;
+    font-size: 12px;
     color: white;
     padding: 10px 0 10px 2px;
     margin-bottom: 10px;
@@ -27,12 +40,24 @@ button {
 .feedback__address {
     margin-right: 5px;
 }
+.feedback__list {
+    color: rgba(79, 79, 79, 0.749);
+}
+.feedback__empty {
+    color: rgba(79, 79, 79, 0.9);
+    font-weight: 500;
+}
 .feedback__item {
-    margin-bottom: 10px;
+    margin-bottom: 7px;
+}
+.feedback__author {
+    color: rgb(79, 79, 79);
+    font-weight: 500;
 }
 .feedback__title {
     text-transform: uppercase;
     color: rgb(255, 134, 99);
+    font-weight: 500;
 }
 .feedback__form {
     display: flex;
