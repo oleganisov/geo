@@ -13,9 +13,11 @@ function mapInit() {
         // Создание кластера.
         const clusterer = await new ymaps.Clusterer({
             clusterDisableClickZoom: true,
+            clusterOpenBalloonOnClick: true,
             clusterBalloonContentLayout: 'cluster#balloonCarousel',
             clusterBalloonItemContentLayout: clusterBalloonItemContentLayout,
             clusterBalloonCycling: false,
+            hideIconOnBalloonOpen: false,
             clusterIcons: [
                 {
                     href: '../assets/img/baloon_notactive.png',
@@ -30,14 +32,19 @@ function mapInit() {
         async function createPlacemark(coords, address = '', hintContent = '') {
             const newPlacemark = await new ymaps.Placemark(
                 coords,
-                { address, hintContent, custom: address },
+                {
+                    address,
+                    hintContent,
+                    balloonContentBody: address
+                },
                 {
                     iconLayout: 'default#image',
                     iconImageHref: '../assets/img/baloon_active.png',
                     iconImageSize: [44, 66],
                     iconImageOffset: [-22, -33],
                     balloonContentLayout: balloonContentLayout,
-                    balloonCloseButton: false
+                    balloonCloseButton: false,
+                    hideIconOnBalloonOpen: false
                 }
             );
 
@@ -117,9 +124,8 @@ function mapInit() {
         );
         // создание макета балуна кластера
         const clusterBalloonItemContentLayout = ymaps.templateLayoutFactory.createClass(
-            '<h2 class=ballon_header>{{ properties.balloonContentHeader|raw }}</h2>' +
-                '<div class=ballon_body>{{ properties.balloonContentBody|raw }}</div>' +
-                '<div class=ballon_footer>{{ properties.balloonContentFooter|raw }}</div>'
+            // '<div class=ballon_header>{{ properties.geoObjects[0].address }}</div>'
+            '<div>{{ properties.balloonContentBody|raw }}</div>'
         );
 
         map.events.add('click', async e => {
@@ -148,7 +154,7 @@ function mapInit() {
             }
         });
         // map.events.add('balloonopen', e =>
-        //     console.log(e.get('target').properties.get('feedback'))
+        //     console.log(e.get('target'))
         // );
     });
 }
