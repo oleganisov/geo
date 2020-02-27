@@ -13,6 +13,9 @@ function mapInit() {
         // Создание кластера.
         const clusterer = await new ymaps.Clusterer({
             clusterDisableClickZoom: true,
+            clusterBalloonContentLayout: 'cluster#balloonCarousel',
+            clusterBalloonItemContentLayout: clusterBalloonItemContentLayout,
+            clusterBalloonCycling: false,
             clusterIcons: [
                 {
                     href: '../assets/img/baloon_notactive.png',
@@ -34,8 +37,7 @@ function mapInit() {
                     iconImageSize: [44, 66],
                     iconImageOffset: [-22, -33],
                     balloonContentLayout: balloonContentLayout,
-                    balloonCloseButton: false,
-                    balloonLayoutPadding: '0px 0px'
+                    balloonCloseButton: false
                 }
             );
 
@@ -49,7 +51,7 @@ function mapInit() {
 
             return address;
         }
-        // создание макета балуна
+        // создание макета балуна метки
         const balloonContentLayout = ymaps.templateLayoutFactory.createClass(
             renderBalloon({
                 balloonAddress: '{{properties.address}}',
@@ -112,6 +114,12 @@ function mapInit() {
                     }
                 }
             }
+        );
+        // создание макета балуна кластера
+        const clusterBalloonItemContentLayout = ymaps.templateLayoutFactory.createClass(
+            '<h2 class=ballon_header>{{ properties.balloonContentHeader|raw }}</h2>' +
+                '<div class=ballon_body>{{ properties.balloonContentBody|raw }}</div>' +
+                '<div class=ballon_footer>{{ properties.balloonContentFooter|raw }}</div>'
         );
 
         map.events.add('click', async e => {
