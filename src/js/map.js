@@ -3,10 +3,9 @@ import renderBalloon from '../templates/balloon.hbs';
 
 function mapInit() {
     ymaps.ready(async () => {
-        let placemarks = [];
         const map = await new ymaps.Map('map-container', {
             center: [55.1, 36.6],
-            zoom: 12,
+            zoom: 15,
             controls: ['zoomControl'],
             behaviors: ['drag']
         });
@@ -17,6 +16,7 @@ function mapInit() {
             clusterBalloonContentLayout: 'cluster#balloonCarousel',
             clusterBalloonItemContentLayout: clusterBalloonItemContentLayout,
             clusterBalloonCycling: false,
+            clusterBalloonPagerType: 'marker',
             hideIconOnBalloonOpen: false,
             clusterIcons: [
                 {
@@ -35,7 +35,10 @@ function mapInit() {
                 {
                     address,
                     hintContent,
-                    balloonContentBody: address
+                    balloonContentHeader: address + 'header',
+                    balloonContentBody: address + 'body',
+                    balloonContentFooter: address + 'footer',
+                    custom: 'test'
                 },
                 {
                     iconLayout: 'default#image',
@@ -124,10 +127,22 @@ function mapInit() {
         );
         // создание макета балуна кластера
         const clusterBalloonItemContentLayout = ymaps.templateLayoutFactory.createClass(
-            // '<div class=ballon_header>{{ properties.geoObjects[0].address }}</div>'
-            '<div>{{ properties.balloonContentBody|raw }}</div>'
+            // '<div >{{ properties.geoObjects[0].properties.address }}</div>'
+            // '<div>{{ properties.balloonContentBody|raw }}</div>'
+            // '{% for geo in properties.geoObjects %}' +
+            //     '<div >geo.properties.feedback.length<div>' +
+            //     '{% endfor %}'
+            [
+                '<div>{{properties.balloonContentHeader|raw }}</div>',
+                '<div>',
+                '{% for geoObject in properties.geoObjects %}',
+                '<div>{{ geoObject.properties.custom }} </div>',
+                '{% endfor %}',
+                '</div>'
+            ].join('')
         );
 
+        // обработчик кликов на карте
         map.events.add('click', async e => {
             const coords = await e.get('coords');
             const address = await getAddress(coords);
@@ -138,10 +153,9 @@ function mapInit() {
             );
 
             clusterer.add(newPlacemark);
-            placemarks.push(newPlacemark);
 
             map.geoObjects.add(clusterer);
-
+            // открытие балуна новой метки
             if (!newPlacemark.balloon.isOpen()) {
                 newPlacemark.balloon.open(
                     coords,
