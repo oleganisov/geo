@@ -6,11 +6,12 @@
                 class="img-close"></button>
     </div>
     <div class="feedback__list">
-        {{#each balloonList}}
+        {{{balloonList}}}
+        {{!-- {{#each balloonList}}
         <div class="feedback__item"> {{name}}: {{comment}} </div>
         {{else}}
         <div class="feedback__empty"> Отзывов пока нет... </div>
-        {{/each}}
+        {{/each}} --}}
     </div>
     <h3 class="feedback__title"> Ваш отзыв </h3>
     <form class="feedback__form">

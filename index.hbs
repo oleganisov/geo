@@ -3,15 +3,15 @@
 
 <head>
   <meta charset="UTF-8">
-  <script src="https://api-maps.yandex.ru/2.1/?apikey=13c6e323-7e44-475b-89cb-d40875866e79&lang=ru_RU"
-    type="text/javascript">
-    </script>
+  <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript">
+  </script>
   <title>{{htmlWebpackPlugin.options.title}}</title>
 </head>
 
 <body>
   <div id="geootzyv-container">
-    {{> "./src/templates/content.hbs"}}
+    <div id="map-container">
+    </div>
   </div>
 </body>
 

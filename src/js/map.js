@@ -1,13 +1,6 @@
 import renderBalloon from '../templates/balloon.hbs';
 /* global ymaps  */
 
-let userData = {
-    feedback: [
-        { name: 'User1', comment: 'Test' },
-        { name: 'User2', comment: 'Test2' }
-    ]
-};
-
 function mapInit() {
     ymaps.ready(async () => {
         let placemarks = [];
@@ -26,14 +19,15 @@ function mapInit() {
         async function createPlacemark(coords, address = '', hintContent = '') {
             const newPlacemark = await new ymaps.Placemark(
                 coords,
-                { address, hintContent },
+                { address, hintContent, custom: address },
                 {
                     iconLayout: 'default#image',
                     iconImageHref: '../assets/img/baloon_active.png',
                     iconImageSize: [44, 66],
                     iconImageOffset: [-22, -33],
                     balloonContentLayout: balloonContentLayout,
-                    balloonCloseButton: false
+                    balloonCloseButton: false,
+                    balloonLayoutPadding: '0px 0px'
                 }
             );
 
@@ -50,9 +44,15 @@ function mapInit() {
         // создание макета балуна
         const balloonContentLayout = ymaps.templateLayoutFactory.createClass(
             renderBalloon({
-                balloonAddress: '$[properties.address]', //'{{ properties.address }}',
-                // balloonList: userData.feedback
-                balloonList: '$[properties.feedback]'
+                balloonAddress: '{{properties.address}}',
+                balloonList:
+                    '{% if properties.feedback.length %}' +
+                    '{% for feed in properties.feedback %}' +
+                    '<div class="feedback__item">{{feed.name}}</div>' +
+                    '{% endfor %}' +
+                    '{% else %}' +
+                    '<div class="feedback__empty"> Отзывов пока нет... </div>' +
+                    '{% endif %}'
             }),
             {
                 build() {
@@ -74,8 +74,11 @@ function mapInit() {
                 handlerSubmit(e) {
                     e.preventDefault();
                     const feedback = {};
-                    const arrFeedback = [];
-                    const feedbackProp = {};
+                    const arrFeedback = this.getData(
+                        'geoObject'
+                    ).properties.get('feedback')
+                        ? this.getData('geoObject').properties.get('feedback')
+                        : [];
                     const form = document.querySelector('.feedback__form');
 
                     if (
@@ -88,15 +91,12 @@ function mapInit() {
                         feedback.comment = form.comment.value;
                         feedback.date = new Date().toLocaleDateString('ru-RU');
                         arrFeedback.push(feedback);
-                        feedbackProp.feedback = arrFeedback;
-                        this.getData('geoObject').properties.set(feedbackProp);
-                    } else {
-                        // alert('Не заполнены поля');
-                    }
-                    if (this.getData('geoObject').properties) {
-                        console.log(
-                            this.getData('geoObject').properties.get('feedback')
+                        this.getData('geoObject').properties.set(
+                            'feedback',
+                            arrFeedback
                         );
+                    } else {
+                        alert('Не заполнены поля');
                     }
                 }
             }
@@ -127,6 +127,9 @@ function mapInit() {
                 );
             }
         });
+        // map.events.add('balloonopen', e =>
+        //     console.log(e.get('target').properties.get('feedback'))
+        // );
     });
 }
 
