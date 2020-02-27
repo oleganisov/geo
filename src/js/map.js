@@ -12,7 +12,15 @@ function mapInit() {
         });
         // Создание кластера.
         const clusterer = await new ymaps.Clusterer({
-            clusterDisableClickZoom: true
+            clusterDisableClickZoom: true,
+            clusterIcons: [
+                {
+                    href: '../assets/img/baloon_notactive.png',
+                    size: [44, 66],
+                    offset: [-22, -33]
+                }
+            ],
+            clusterNumbers: [100]
         });
 
         // Создание метки.
