@@ -33,26 +33,24 @@ function mapInit() {
                     linkOpen.addEventListener(
                         'click',
                         this.handlerBallonOpen.bind(this)
-                        // () => {
-                        //     this.getData().geoObject.balloon.open(
-                        //         this.getData().geoObject.geometry._coordinates
-                        //     );
-                        // }
                     );
-                    // console.log(this.getData().geoObject.properties);
-                    // console.log(this.getData().geoObject);
-
-                    // console.log(this.getData().geoObject.geometry._coordinates);
                 },
                 handlerBallonOpen(e) {
                     e.preventDefault();
                     const coords = this.getData().geoObject.geometry
                         ._coordinates;
+                    const geoObject = this.getData().geoObject;
 
-                    // console.log(this.getData().geoObject);
-                    // console.log(coords);
+                    // закрытие балуна кластера
                     // this.events.fire('userclose');
-                    this.getData().geoObject.balloon.open(coords);
+                    map.zoomRange.get(coords).then(range => {
+                        map.setCenter(coords, range[1], {
+                            checkZoomRange: true // контролируем доступность масштаба
+                        }).then(() => {
+                            // спозиционировались
+                            geoObject.balloon.open();
+                        });
+                    });
                 }
             }
         );
@@ -224,9 +222,6 @@ function mapInit() {
             }
         });
         map.geoObjects.add(clusterer);
-        // map.events.add('balloonopen', e =>
-        //     console.log(e.get('target'))
-        // );
     });
 }
 
