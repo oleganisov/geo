@@ -172,6 +172,7 @@ function mapInit() {
                     iconImageSize: [44, 66],
                     iconImageOffset: [-22, -33],
                     balloonContentLayout: balloonContentLayout,
+                    balloonMaxHeight: 500,
                     balloonCloseButton: false,
                     hideIconOnBalloonOpen: false
                 }
