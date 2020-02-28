@@ -11,9 +11,25 @@ function mapInit() {
         });
         // создание макета балуна кластера
         const clusterBalloonItemContentLayout = ymaps.templateLayoutFactory.createClass(
-            '<h2 class=ballon_header>{{ properties.balloonContentHeader|raw }}</h2>' +
-                '<div class=ballon_body>{{ properties.balloonContentBody|raw }}</div>' +
-                '<div class=ballon_footer>{{ properties.custom|raw }}</div>'
+            '<div class=carousel>' +
+                '<div class="carousel__address"><a href=# class="carousel__link">{{properties.address}}</a></div>' +
+                '{% if properties.feedback.length %}' +
+                '{% for feed in properties.feedback %}' +
+                '<div class="carousel__place">{{feed.place}} </div>' +
+                '<div class="carousel__comment">{{feed.comment}}</div>' +
+                '<div class="carousel__date">{{feed.date}}</div>' +
+                '{% endfor %}' +
+                '{% else %}' +
+                '<div class="carousel__empty"> Отзывов пока нет... </div>' +
+                '{% endif %} </div>',
+            {
+                build() {
+                    this.constructor.superclass.build.call(this);
+                    // console.log(this.getData());
+                    // console.log(this.getData().properties);
+                    // console.log(this.getData().properties.get('custom'));
+                }
+            }
         );
         // создание макета балуна метки
         const balloonContentLayout = ymaps.templateLayoutFactory.createClass(
@@ -67,7 +83,7 @@ function mapInit() {
                         feedback.name = form.name.value;
                         feedback.place = form.place.value;
                         feedback.comment = form.comment.value;
-                        feedback.date = new Date().toLocaleDateString('ru-RU');
+                        feedback.date = new Date().toLocaleString('ru-RU');
                         arrFeedback.push(feedback);
                         this.getData('geoObject').properties.set(
                             'feedback',
@@ -104,11 +120,7 @@ function mapInit() {
                 coords,
                 {
                     address,
-                    hintContent,
-                    balloonContentHeader: address + 'header',
-                    balloonContentBody: address + 'body',
-                    balloonContentFooter: address + 'footer',
-                    custom: 'test'
+                    hintContent
                 },
                 {
                     iconLayout: 'default#image',
@@ -143,8 +155,8 @@ function mapInit() {
             );
 
             clusterer.add(newPlacemark);
-
             map.geoObjects.add(clusterer);
+
             // открытие балуна новой метки
             if (!newPlacemark.balloon.isOpen()) {
                 newPlacemark.balloon.open(coords);
