@@ -1,6 +1,6 @@
 import renderBalloon from '../templates/balloon.hbs';
 /* global ymaps  */
-const placemarks = [];
+const placemarks = JSON.parse(localStorage.placemarks);
 
 function mapInit() {
     ymaps.ready(async () => {
