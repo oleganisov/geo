@@ -95,7 +95,7 @@ function mapInit() {
                     const coords = this.getData().geometry._coordinates;
                     // поиск индекса элемента массива по текущиим координатам
                     const posElem = placemarks.findIndex(
-                        item => (item.id = coords.join(''))
+                        item => item.id == coords.join('')
                     );
                     let placemark = {};
                     const feedback = {};
@@ -154,7 +154,6 @@ function mapInit() {
             clusterNumbers: [100]
         });
 
-        // map.geoObjects.add(clusterer);
         // Создание метки.
         async function createPlacemark(
             coords,
@@ -200,7 +199,6 @@ function mapInit() {
             );
 
             clusterer.add(mark);
-            map.geoObjects.add(clusterer);
         });
 
         // обработчик кликов на карте
@@ -215,7 +213,6 @@ function mapInit() {
             );
 
             clusterer.add(newPlacemark);
-            map.geoObjects.add(clusterer);
             // сохранение метки в массив из объектов и в localStorage
             placemark = { id: coords.join(''), coords };
             placemarks.push(placemark);
@@ -226,6 +223,7 @@ function mapInit() {
                 newPlacemark.balloon.open(coords);
             }
         });
+        map.geoObjects.add(clusterer);
         // map.events.add('balloonopen', e =>
         //     console.log(e.get('target'))
         // );
