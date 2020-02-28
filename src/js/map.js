@@ -1,6 +1,8 @@
 import renderBalloon from '../templates/balloon.hbs';
 /* global ymaps  */
-const placemarks = JSON.parse(localStorage.placemarks);
+const placemarks = localStorage.placemarks
+    ? JSON.parse(localStorage.placemarks)
+    : [];
 
 function mapInit() {
     ymaps.ready(async () => {
@@ -37,8 +39,8 @@ function mapInit() {
                         //     );
                         // }
                     );
-                    console.log(this.getData().geoObject.properties);
-                    console.log(this.getData().geoObject);
+                    // console.log(this.getData().geoObject.properties);
+                    // console.log(this.getData().geoObject);
 
                     // console.log(this.getData().geoObject.geometry._coordinates);
                 },
@@ -48,7 +50,7 @@ function mapInit() {
                         ._coordinates;
 
                     // console.log(this.getData().geoObject);
-                    console.log(coords);
+                    // console.log(coords);
                     // this.events.fire('userclose');
                     this.getData().geoObject.balloon.open(coords);
                 }
@@ -93,9 +95,9 @@ function mapInit() {
                     const coords = this.getData().geometry._coordinates;
                     // поиск индекса элемента массива по текущиим координатам
                     const posElem = placemarks.findIndex(
-                        item => item[coords.join('')]
+                        item => (item.id = coords.join(''))
                     );
-                    const placemark = {};
+                    let placemark = {};
                     const feedback = {};
                     const arrFeedback = this.getData(
                         'geoObject'
@@ -119,7 +121,8 @@ function mapInit() {
                             arrFeedback
                         );
 
-                        placemark[coords.join('')] = {
+                        placemark = {
+                            id: coords.join(''),
                             coords,
                             feedback: arrFeedback
                         };
@@ -151,13 +154,20 @@ function mapInit() {
             clusterNumbers: [100]
         });
 
+        // map.geoObjects.add(clusterer);
         // Создание метки.
-        async function createPlacemark(coords, address = '', hintContent = '') {
+        async function createPlacemark(
+            coords,
+            address = '',
+            hintContent = '',
+            feedback = ''
+        ) {
             const newPlacemark = await new ymaps.Placemark(
                 coords,
                 {
                     address,
-                    hintContent
+                    hintContent,
+                    feedback
                 },
                 {
                     iconLayout: 'default#image',
@@ -180,11 +190,23 @@ function mapInit() {
 
             return address;
         }
+        placemarks.forEach(async obj => {
+            const objAddr = await getAddress(obj.coords);
+            const mark = await createPlacemark(
+                obj.coords,
+                objAddr,
+                objAddr,
+                obj.feedback
+            );
+
+            clusterer.add(mark);
+            map.geoObjects.add(clusterer);
+        });
 
         // обработчик кликов на карте
         map.events.add('click', async e => {
             const coords = await e.get('coords');
-            const placemark = {};
+            let placemark = {};
             const address = await getAddress(coords);
             const newPlacemark = await createPlacemark(
                 coords,
@@ -194,8 +216,8 @@ function mapInit() {
 
             clusterer.add(newPlacemark);
             map.geoObjects.add(clusterer);
-            // сохранение метки в массив из объектов и localStorage
-            placemark[coords.join('')] = { coords };
+            // сохранение метки в массив из объектов и в localStorage
+            placemark = { id: coords.join(''), coords };
             placemarks.push(placemark);
             localStorage.placemarks = JSON.stringify(placemarks);
 
