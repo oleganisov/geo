@@ -1,5 +1,6 @@
 import renderBalloon from '../templates/balloon.hbs';
 /* global ymaps  */
+const placemarks = [];
 
 function mapInit() {
     ymaps.ready(async () => {
@@ -25,9 +26,31 @@ function mapInit() {
             {
                 build() {
                     this.constructor.superclass.build.call(this);
-                    // console.log(this.getData());
-                    // console.log(this.getData().properties);
-                    // console.log(this.getData().properties.get('custom'));
+                    const linkOpen = document.querySelector('.carousel__link');
+
+                    linkOpen.addEventListener(
+                        'click',
+                        this.handlerBallonOpen.bind(this)
+                        // () => {
+                        //     this.getData().geoObject.balloon.open(
+                        //         this.getData().geoObject.geometry._coordinates
+                        //     );
+                        // }
+                    );
+                    console.log(this.getData().geoObject.properties);
+                    console.log(this.getData().geoObject);
+
+                    // console.log(this.getData().geoObject.geometry._coordinates);
+                },
+                handlerBallonOpen(e) {
+                    e.preventDefault();
+                    const coords = this.getData().geoObject.geometry
+                        ._coordinates;
+
+                    // console.log(this.getData().geoObject);
+                    console.log(coords);
+                    // this.events.fire('userclose');
+                    this.getData().geoObject.balloon.open(coords);
                 }
             }
         );
@@ -67,6 +90,12 @@ function mapInit() {
                 },
                 handlerSubmit(e) {
                     e.preventDefault();
+                    const coords = this.getData().geometry._coordinates;
+                    // поиск индекса элемента массива по текущиим координатам
+                    const posElem = placemarks.findIndex(
+                        item => item[coords.join('')]
+                    );
+                    const placemark = {};
                     const feedback = {};
                     const arrFeedback = this.getData(
                         'geoObject'
@@ -89,6 +118,14 @@ function mapInit() {
                             'feedback',
                             arrFeedback
                         );
+
+                        placemark[coords.join('')] = {
+                            coords,
+                            feedback: arrFeedback
+                        };
+                        // замена элемента в массиве меток
+                        placemarks.splice(posElem, 1, placemark);
+                        localStorage.placemarks = JSON.stringify(placemarks);
                     } else {
                         alert('Не заполнены поля');
                     }
@@ -147,6 +184,7 @@ function mapInit() {
         // обработчик кликов на карте
         map.events.add('click', async e => {
             const coords = await e.get('coords');
+            const placemark = {};
             const address = await getAddress(coords);
             const newPlacemark = await createPlacemark(
                 coords,
@@ -156,6 +194,10 @@ function mapInit() {
 
             clusterer.add(newPlacemark);
             map.geoObjects.add(clusterer);
+            // сохранение метки в массив из объектов и localStorage
+            placemark[coords.join('')] = { coords };
+            placemarks.push(placemark);
+            localStorage.placemarks = JSON.stringify(placemarks);
 
             // открытие балуна новой метки
             if (!newPlacemark.balloon.isOpen()) {
