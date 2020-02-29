@@ -5,21 +5,22 @@
         <button class="feedback__close"><img src="../../assets/img/button_close_header.png" alt="close"
                 class="img-close"></button>
     </div>
-    <div class="feedback__list">
-        {{{balloonList}}}
-        {{!-- {{#each balloonList}}
+    <div class="feedback__main">
+        <div class="feedback__list">
+            {{{balloonList}}}
+            {{!-- {{#each balloonList}}
         <div class="feedback__item"> {{name}}: {{comment}} </div>
         {{else}}
         <div class="feedback__empty"> Отзывов пока нет... </div>
         {{/each}} --}}
+        </div>
+        <h3 class="feedback__title"> Ваш отзыв </h3>
+        <form class="feedback__form">
+            <input class="feedback__input" name="name" type="text" placeholder="Ваше имя"></input>
+            <input class="feedback__input" name="place" type="text" placeholder="Укажите место"></input>
+            <textarea class="feedback__input input-text" name="comment" rows="5"
+                placeholder="Поделитесь впечатлениями"></textarea>
+            <div class="feedback__control"><button class="feedback__submit">Добавить</button></div>
+        </form>
     </div>
-    <h3 class="feedback__title"> Ваш отзыв </h3>
-    <form class="feedback__form">
-        <input class="feedback__input" name="name" type="text" placeholder="Ваше имя"></input>
-        <input class="feedback__input" name="place" type="text" placeholder="Укажите место"></input>
-        <textarea class="feedback__input input-text" name="comment" rows="5"
-            placeholder="Поделитесь впечатлениями"></textarea>
-        <div class="feedback__control"><button class="feedback__submit">Добавить</button></div>
-</div>
-</form>
 </div>

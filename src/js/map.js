@@ -1,47 +1,60 @@
 import renderBalloon from '../templates/balloon.hbs';
 /* global ymaps  */
+const placemarks = localStorage.placemarks
+    ? JSON.parse(localStorage.placemarks)
+    : [];
 
 function mapInit() {
     ymaps.ready(async () => {
-        let placemarks = [];
         const map = await new ymaps.Map('map-container', {
             center: [55.1, 36.6],
-            zoom: 12,
+            zoom: 15,
             controls: ['zoomControl'],
             behaviors: ['drag']
         });
-        // Создание кластера.
-        const clusterer = await new ymaps.Clusterer({
-            clusterDisableClickZoom: true
-        });
+        // создание макета балуна кластера
+        const clusterBalloonItemContentLayout = ymaps.templateLayoutFactory.createClass(
+            '<div class=carousel>' +
+                '<div class="carousel__address"><a href=# class="carousel__link">{{properties.address}}</a></div>' +
+                '{% if properties.feedback.length %}' +
+                '{% for feed in properties.feedback %}' +
+                '<div class="carousel__place">{{feed.place}} </div>' +
+                '<div class="carousel__comment">{{feed.comment}}</div>' +
+                '<div class="carousel__date">{{feed.date}}</div>' +
+                '{% endfor %}' +
+                '{% else %}' +
+                '<div class="carousel__empty"> Отзывов пока нет... </div>' +
+                '{% endif %} </div>',
+            {
+                build() {
+                    this.constructor.superclass.build.call(this);
+                    const linkOpen = document.querySelector('.carousel__link');
 
-        // Создание метки.
-        async function createPlacemark(coords, address = '', hintContent = '') {
-            const newPlacemark = await new ymaps.Placemark(
-                coords,
-                { address, hintContent, custom: address },
-                {
-                    iconLayout: 'default#image',
-                    iconImageHref: '../assets/img/baloon_active.png',
-                    iconImageSize: [44, 66],
-                    iconImageOffset: [-22, -33],
-                    balloonContentLayout: balloonContentLayout,
-                    balloonCloseButton: false,
-                    balloonLayoutPadding: '0px 0px'
+                    linkOpen.addEventListener(
+                        'click',
+                        this.handlerBallonOpen.bind(this)
+                    );
+                },
+                handlerBallonOpen(e) {
+                    e.preventDefault();
+                    const coords = this.getData().geoObject.geometry
+                        ._coordinates;
+                    const geoObject = this.getData().geoObject;
+
+                    // закрытие балуна кластера
+                    // this.events.fire('userclose');
+                    map.zoomRange.get(coords).then(range => {
+                        map.setCenter(coords, range[1], {
+                            checkZoomRange: true // контролируем доступность масштаба
+                        }).then(() => {
+                            // спозиционировались
+                            geoObject.balloon.open();
+                        });
+                    });
                 }
-            );
-
-            return newPlacemark;
-        }
-        // Получение адреса.
-        async function getAddress(coords) {
-            const geocode = await ymaps.geocode(coords);
-            const firstObject = await geocode.geoObjects.get(0);
-            const address = await firstObject.getAddressLine();
-
-            return address;
-        }
-        // создание макета балуна
+            }
+        );
+        // создание макета балуна метки
         const balloonContentLayout = ymaps.templateLayoutFactory.createClass(
             renderBalloon({
                 balloonAddress: '{{properties.address}}',
@@ -77,6 +90,12 @@ function mapInit() {
                 },
                 handlerSubmit(e) {
                     e.preventDefault();
+                    const coords = this.getData().geometry._coordinates;
+                    // поиск индекса элемента массива по текущиим координатам
+                    const posElem = placemarks.findIndex(
+                        item => item.id == coords.join('')
+                    );
+                    let placemark = {};
                     const feedback = {};
                     const arrFeedback = this.getData(
                         'geoObject'
@@ -93,21 +112,98 @@ function mapInit() {
                         feedback.name = form.name.value;
                         feedback.place = form.place.value;
                         feedback.comment = form.comment.value;
-                        feedback.date = new Date().toLocaleDateString('ru-RU');
+                        feedback.date = new Date().toLocaleString('ru-RU');
                         arrFeedback.push(feedback);
                         this.getData('geoObject').properties.set(
                             'feedback',
                             arrFeedback
                         );
+
+                        placemark = {
+                            id: coords.join(''),
+                            coords,
+                            feedback: arrFeedback
+                        };
+                        // замена элемента в массиве меток
+                        placemarks.splice(posElem, 1, placemark);
+                        localStorage.placemarks = JSON.stringify(placemarks);
                     } else {
                         alert('Не заполнены поля');
                     }
                 }
             }
         );
+        // Создание кластера.
+        const clusterer = await new ymaps.Clusterer({
+            clusterDisableClickZoom: true,
+            clusterOpenBalloonOnClick: true,
+            clusterBalloonContentLayout: 'cluster#balloonCarousel',
+            clusterBalloonItemContentLayout: clusterBalloonItemContentLayout,
+            clusterBalloonCycling: false,
+            clusterBalloonPagerType: 'marker',
+            hideIconOnBalloonOpen: false,
+            clusterIcons: [
+                {
+                    href: '../assets/img/baloon_notactive.png',
+                    size: [44, 66],
+                    offset: [-22, -33]
+                }
+            ],
+            clusterNumbers: [100]
+        });
 
+        // Создание метки.
+        async function createPlacemark(
+            coords,
+            address = '',
+            hintContent = '',
+            feedback = ''
+        ) {
+            const newPlacemark = await new ymaps.Placemark(
+                coords,
+                {
+                    address,
+                    hintContent,
+                    feedback
+                },
+                {
+                    iconLayout: 'default#image',
+                    iconImageHref: '../assets/img/baloon_active.png',
+                    iconImageSize: [44, 66],
+                    iconImageOffset: [-22, -33],
+                    balloonContentLayout: balloonContentLayout,
+                    balloonMaxHeight: 500,
+                    balloonCloseButton: false,
+                    hideIconOnBalloonOpen: false
+                }
+            );
+
+            return newPlacemark;
+        }
+        // Получение адреса.
+        async function getAddress(coords) {
+            const geocode = await ymaps.geocode(coords);
+            const firstObject = await geocode.geoObjects.get(0);
+            const address = await firstObject.getAddressLine();
+
+            return address;
+        }
+        placemarks.forEach(async obj => {
+            const objAddr = await getAddress(obj.coords);
+            const mark = await createPlacemark(
+                obj.coords,
+                objAddr,
+                objAddr,
+                obj.feedback
+            );
+
+            clusterer.add(mark);
+        });
+
+        // обработчик кликов на карте
         map.events.add('click', async e => {
             const coords = await e.get('coords');
+            let placemark = {};
             const address = await getAddress(coords);
             const newPlacemark = await createPlacemark(
                 coords,
@@ -116,24 +212,17 @@ function mapInit() {
             );
 
             clusterer.add(newPlacemark);
-            placemarks.push(newPlacemark);
+            // сохранение метки в массив из объектов и в localStorage
+            placemark = { id: coords.join(''), coords };
+            placemarks.push(placemark);
+            localStorage.placemarks = JSON.stringify(placemarks);
 
-            map.geoObjects.add(clusterer);
-
+            // открытие балуна новой метки
             if (!newPlacemark.balloon.isOpen()) {
-                newPlacemark.balloon.open(
-                    coords,
-                    {},
-                    {
-                        balloonContentLayout: balloonContentLayout,
-                        closeButton: false
-                    }
-                );
+                newPlacemark.balloon.open(coords);
             }
         });
-        // map.events.add('balloonopen', e =>
-        //     console.log(e.get('target').properties.get('feedback'))
-        // );
+        map.geoObjects.add(clusterer);
     });
 }
 
