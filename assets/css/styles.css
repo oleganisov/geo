@@ -8,6 +8,7 @@ body {
     -moz-osx-font-smoothing: grayscale;
     position: relative;
     height: 100%;
+    margin: initial;
 }
 button {
     border: none;
